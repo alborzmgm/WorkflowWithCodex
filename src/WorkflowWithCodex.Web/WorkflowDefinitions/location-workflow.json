@@ -1,7 +1,52 @@
 {
-  "id": "CustomerOnboarding",
+  "id": "CustomerOnboardingAdvanced",
   "title": "Customer Onboarding Workflow",
   "steps": [
+    {
+      "id": "Profile",
+      "title": "Profile",
+      "fields": [
+        {
+          "key": "FullName",
+          "label": "Full Name",
+          "type": "Text",
+          "required": true,
+          "placeholder": "John Doe"
+        },
+        {
+          "key": "Email",
+          "label": "Email",
+          "type": "Text",
+          "required": true,
+          "placeholder": "john@contoso.com",
+          "validation": {
+            "format": "email"
+          }
+        },
+        {
+          "key": "PhoneNumber",
+          "label": "Phone Number",
+          "type": "Text",
+          "placeholder": "+1 555 0100"
+        },
+        {
+          "key": "IsBusiness",
+          "label": "Business customer",
+          "type": "Checkbox"
+        },
+        {
+          "key": "CompanyName",
+          "label": "Company Name",
+          "type": "Text",
+          "required": true,
+          "placeholder": "Contoso Ltd.",
+          "visibleWhen": {
+            "field": "IsBusiness",
+            "equals": "true"
+          }
+        }
+      ]
+    },
     {
       "id": "Location",
       "title": "Location",
@@ -30,6 +75,16 @@
           "placeholder": "Select a district",
           "dataSource": "Districts",
           "dependsOn": ["CityId"]
+        },
+        {
+          "key": "Neighborhood",
+          "label": "Neighborhood",
+          "type": "Text",
+          "placeholder": "Downtown",
+          "visibleWhen": {
+            "field": "DistrictId",
+            "hasValue": true
+          }
         }
       ]
     },
@@ -52,6 +107,12 @@
           "placeholder": "12"
         },
         {
+          "key": "Unit",
+          "label": "Unit",
+          "type": "Text",
+          "placeholder": "7A"
+        },
+        {
           "key": "PostalCode",
           "label": "Postal Code",
           "type": "Text",
@@ -65,29 +126,11 @@
       "title": "Preferences",
       "fields": [
         {
-          "key": "IsBusiness",
-          "label": "Business customer",
-          "type": "Checkbox"
-        },
-        {
-          "key": "CompanyName",
-          "label": "Company Name",
-          "type": "Text",
-          "placeholder": "Contoso Ltd.",
-          "visibleWhen": {
-            "field": "IsBusiness",
-            "equals": "true"
-          }
-        },
-        {
           "key": "InterestedServices",
           "label": "Interested Services",
           "type": "CheckboxList",
-          "dataSource": "Services",
-          "visibleWhen": {
-            "field": "IsBusiness",
-            "equals": "true"
-          }
+          "required": true,
+          "dataSource": "Services"
         },
         {
           "key": "SupportNotes",
@@ -107,6 +150,22 @@
             "field": "IsBusiness",
             "notEquals": "true"
           }
+        },
+        {
+          "key": "Referral",
+          "label": "Referral Code",
+          "type": "Text",
+          "placeholder": "Optional",
+          "visibleWhen": {
+            "field": "PhoneNumber",
+            "isEmpty": true
+          }
+        },
+        {
+          "key": "AcceptTerms",
+          "label": "Accept terms and privacy policy",
+          "type": "Checkbox",
+          "required": true
         }
       ]
     }

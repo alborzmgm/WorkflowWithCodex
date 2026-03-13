@@ -61,9 +61,11 @@
     private readonly DynamicFormState _state = new();
     private readonly Dictionary<string, IReadOnlyList<SelectOption>> _options = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, FieldDefinition> _fields = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _touchedFields = new(StringComparer.OrdinalIgnoreCase);
     private DependencyGraph _dependencyGraph = default!;
     private int _currentStepIndex;
     private bool _isSubmitted;
+    private bool _showStepValidation;
     private string _submittedJson = string.Empty;
 
     private WorkflowStepDefinition CurrentStep => Definition.Steps[_currentStepIndex];
@@ -84,25 +86,30 @@
 
     private Dictionary<string, object?> BuildParameters(FieldDefinition field)
     {
+        var validationMessage = GetFieldValidationMessage(field);
         return new Dictionary<string, object?>
         {
             ["Field"] = field,
             ["Value"] = _state[field.Key],
             ["ValueChanged"] = EventCallback.Factory.Create<object?>(this, value => OnFieldValueChangedAsync(field, value)),
             ["Options"] = GetFieldOptions(field),
-            ["IsDisabled"] = !AreDependenciesSatisfied(field)
+            ["IsDisabled"] = !AreDependenciesSatisfied(field),
+            ["ShowValidation"] = ShouldShowFieldValidation(field),
+            ["ValidationMessage"] = validationMessage
         };
     }
 
     private async Task OnFieldValueChangedAsync(FieldDefinition field, object? value)
     {
         _state[field.Key] = NormalizeValue(field, value);
+        _touchedFields.Add(field.Key);
         _isSubmitted = false;
 
         foreach (var dependent in _dependencyGraph.GetDescendants(field.Key))
         {
             _state.Remove(dependent);
             _options.Remove(dependent);
+            _touchedFields.Remove(dependent);
         }
 
         RemoveHiddenFieldValues();
@@ -115,6 +122,7 @@
         {
             _state.Remove(field.Key);
             _options.Remove(field.Key);
+            _touchedFields.Remove(field.Key);
         }
     }
 
@@ -185,12 +193,17 @@
 
     private bool IsFieldValid(FieldDefinition field)
     {
-        if (!field.Required)
-        {
-            return true;
-        }
+        return string.IsNullOrWhiteSpace(GetFieldValidationMessage(field));
+    }
 
-        return HasValue(_state[field.Key]);
+    private string? GetFieldValidationMessage(FieldDefinition field)
+    {
+        return FieldValidator.GetValidationMessage(field, _state[field.Key]);
+    }
+
+    private bool ShouldShowFieldValidation(FieldDefinition field)
+    {
+        return _showStepValidation || _touchedFields.Contains(field.Key);
     }
 
     private static Type ResolveFieldComponent(FieldType type)
@@ -208,11 +221,18 @@
 
     private void MoveNext()
     {
-        if (!CanMoveNext || _currentStepIndex >= Definition.Steps.Count - 1)
+        if (!CanMoveNext)
+        {
+            _showStepValidation = true;
+            return;
+        }
+
+        if (_currentStepIndex >= Definition.Steps.Count - 1)
         {
             return;
         }
 
+        _showStepValidation = false;
         _currentStepIndex++;
     }
 
@@ -221,6 +241,7 @@
         if (_currentStepIndex > 0)
         {
             _currentStepIndex--;
+            _showStepValidation = false;
         }
     }
 
@@ -229,6 +250,7 @@
         if (stepIndex <= _currentStepIndex)
         {
             _currentStepIndex = stepIndex;
+            _showStepValidation = false;
         }
     }
 
@@ -236,9 +258,11 @@
     {
         if (!CanMoveNext)
         {
+            _showStepValidation = true;
             return;
         }
 
+        _showStepValidation = false;
         _submittedJson = JsonSerializer.Serialize(_state.Values, new JsonSerializerOptions { WriteIndented = true });
         _isSubmitted = true;
     }

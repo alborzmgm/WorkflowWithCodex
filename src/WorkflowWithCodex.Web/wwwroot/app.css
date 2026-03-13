@@ -71,6 +71,10 @@ h1:focus {
     background-color: #fff;
 }
 
+.checkboxlist-panel.is-invalid {
+    border-color: #dc3545;
+}
+
 .checkboxlist-option {
     display: flex;
     align-items: center;

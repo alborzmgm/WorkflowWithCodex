@@ -17,6 +17,7 @@ public sealed class FieldDefinition
     public string? Placeholder { get; init; }
     public string? DataSource { get; init; }
     public bool Required { get; init; }
+    public FieldValidationRule? Validation { get; init; }
     public List<string> DependsOn { get; init; } = [];
     public VisibilityCondition? VisibleWhen { get; init; }
 }
