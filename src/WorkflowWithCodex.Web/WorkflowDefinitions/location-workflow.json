@@ -90,9 +90,23 @@
           }
         },
         {
+          "key": "SupportNotes",
+          "label": "Support Notes",
+          "type": "Text",
+          "placeholder": "Any special support request",
+          "visibleWhen": {
+            "field": "InterestedServices",
+            "contains": "Consulting"
+          }
+        },
+        {
           "key": "Newsletter",
           "label": "Subscribe to newsletter",
-          "type": "Checkbox"
+          "type": "Checkbox",
+          "visibleWhen": {
+            "field": "IsBusiness",
+            "notEquals": "true"
+          }
         }
       ]
     }

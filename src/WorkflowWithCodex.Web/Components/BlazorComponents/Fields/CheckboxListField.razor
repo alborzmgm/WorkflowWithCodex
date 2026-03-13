@@ -1,17 +1,26 @@
 @using WorkflowWithCodex.WorkflowEngine.WorkflowEngine
 
 <div class="col-12">
-    <label class="form-label">@Field.Label @RequiredMarker</label>
-    <div class="row g-2">
+    <label class="form-label mb-2">@Field.Label @RequiredMarker</label>
+    <div class="checkboxlist-panel p-2 p-md-3">
+        <div class="row g-2 g-md-3">
         @foreach (var option in Options)
         {
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="form-check border rounded p-2">
-                    <input id="@GetId(option.Value)" class="form-check-input" type="checkbox" disabled="@IsDisabled" checked="@IsSelected(option.Value)" @onchange="args => OnChanged(option.Value, args)" />
-                    <label class="form-check-label" for="@GetId(option.Value)">@option.Label</label>
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="form-check p-0 m-0">
+                        <input id="@GetId(option.Value)" class="form-check-input visually-hidden" type="checkbox" disabled="@IsDisabled" checked="@IsSelected(option.Value)" @onchange="args => OnChanged(option.Value, args)" />
+                        <label class="form-check-label checkboxlist-option w-100 @(IsSelected(option.Value) ? "checkboxlist-option-selected" : string.Empty)" for="@GetId(option.Value)">
+                            <span class="checkboxlist-indicator" aria-hidden="true"></span>
+                            <span class="fw-medium">@option.Label</span>
+                        </label>
+                    </div>
                 </div>
-            </div>
         }
+        @if (Options.Count == 0)
+        {
+                <div class="col-12 text-secondary small">No items available.</div>
+        }
+        </div>
     </div>
 </div>
 

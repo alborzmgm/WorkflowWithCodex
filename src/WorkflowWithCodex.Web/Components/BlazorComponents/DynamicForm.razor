@@ -157,8 +157,8 @@
             return true;
         }
 
-        var value = _state[visibleWhen.Field]?.ToString();
-        return string.Equals(value, visibleWhen.ExpectedValue, StringComparison.OrdinalIgnoreCase);
+        var value = _state[visibleWhen.Field];
+        return VisibilityEvaluator.IsVisible(value, visibleWhen);
     }
 
     private static object? NormalizeValue(FieldDefinition field, object? rawValue)

@@ -30,5 +30,6 @@ Open the URL printed by `dotnet run`.
 ## Workflow JSON Notes
 
 - JSON defines steps, fields, dependencies (`dependsOn`), visibility (`visibleWhen`) and data source keys.
+- `visibleWhen` supports `equals`, `notEquals`, `contains`, `hasValue`, and `isEmpty`.
 - JSON does not include business logic, SQL, or API calls.
 - C# provider classes implement dynamic option loading using current form context.
