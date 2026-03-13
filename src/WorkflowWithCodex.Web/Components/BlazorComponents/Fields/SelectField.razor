@@ -1,0 +1,33 @@
+@using WorkflowWithCodex.WorkflowEngine.WorkflowEngine
+
+<div class="col-12 col-md-6">
+    <label class="form-label" for="@Field.Key">@Field.Label @RequiredMarker</label>
+    <select id="@Field.Key" class="form-select @(HasError ? "is-invalid" : string.Empty)" disabled="@IsDisabled" value="@CurrentValue" @onchange="OnChanged">
+        <option value="">@Placeholder</option>
+        @foreach (var option in Options)
+        {
+            <option value="@option.Value">@option.Label</option>
+        }
+    </select>
+    @if (HasError)
+    {
+        <div class="invalid-feedback d-block">@ValidationMessage</div>
+    }
+</div>
+
+@code {
+    [Parameter] public required FieldDefinition Field { get; set; }
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public IReadOnlyList<SelectOption> Options { get; set; } = [];
+    [Parameter] public bool IsDisabled { get; set; }
+    [Parameter] public bool ShowValidation { get; set; }
+    [Parameter] public string? ValidationMessage { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private string CurrentValue => Value?.ToString() ?? string.Empty;
+    private string RequiredMarker => Field.Required ? "*" : string.Empty;
+    private string Placeholder => Field.Placeholder ?? "Select an option";
+    private bool HasError => ShowValidation && !string.IsNullOrWhiteSpace(ValidationMessage);
+
+    private Task OnChanged(ChangeEventArgs args) => ValueChanged.InvokeAsync(args.Value?.ToString());
+}

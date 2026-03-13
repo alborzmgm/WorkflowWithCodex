@@ -1,0 +1,173 @@
+{
+  "id": "CustomerOnboardingAdvanced",
+  "title": "Customer Onboarding Workflow",
+  "steps": [
+    {
+      "id": "Profile",
+      "title": "Profile",
+      "fields": [
+        {
+          "key": "FullName",
+          "label": "Full Name",
+          "type": "Text",
+          "required": true,
+          "placeholder": "John Doe"
+        },
+        {
+          "key": "Email",
+          "label": "Email",
+          "type": "Text",
+          "required": true,
+          "placeholder": "john@contoso.com",
+          "validation": {
+            "format": "email"
+          }
+        },
+        {
+          "key": "PhoneNumber",
+          "label": "Phone Number",
+          "type": "Text",
+          "placeholder": "+1 555 0100"
+        },
+        {
+          "key": "IsBusiness",
+          "label": "Business customer",
+          "type": "Checkbox"
+        },
+        {
+          "key": "CompanyName",
+          "label": "Company Name",
+          "type": "Text",
+          "required": true,
+          "placeholder": "Contoso Ltd.",
+          "visibleWhen": {
+            "field": "IsBusiness",
+            "equals": "true"
+          }
+        }
+      ]
+    },
+    {
+      "id": "Location",
+      "title": "Location",
+      "fields": [
+        {
+          "key": "CountryId",
+          "label": "Country",
+          "type": "Select",
+          "required": true,
+          "placeholder": "Select a country",
+          "dataSource": "Countries"
+        },
+        {
+          "key": "CityId",
+          "label": "City",
+          "type": "Select",
+          "required": true,
+          "placeholder": "Select a city",
+          "dataSource": "Cities",
+          "dependsOn": ["CountryId"]
+        },
+        {
+          "key": "DistrictId",
+          "label": "District",
+          "type": "Select",
+          "placeholder": "Select a district",
+          "dataSource": "Districts",
+          "dependsOn": ["CityId"]
+        },
+        {
+          "key": "Neighborhood",
+          "label": "Neighborhood",
+          "type": "Text",
+          "placeholder": "Downtown",
+          "visibleWhen": {
+            "field": "DistrictId",
+            "hasValue": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "Address",
+      "title": "Address",
+      "fields": [
+        {
+          "key": "Street",
+          "label": "Street",
+          "type": "Text",
+          "required": true,
+          "placeholder": "221B Baker Street"
+        },
+        {
+          "key": "BuildingNo",
+          "label": "Building Number",
+          "type": "Number",
+          "required": true,
+          "placeholder": "12"
+        },
+        {
+          "key": "Unit",
+          "label": "Unit",
+          "type": "Text",
+          "placeholder": "7A"
+        },
+        {
+          "key": "PostalCode",
+          "label": "Postal Code",
+          "type": "Text",
+          "required": true,
+          "placeholder": "12345"
+        }
+      ]
+    },
+    {
+      "id": "Preferences",
+      "title": "Preferences",
+      "fields": [
+        {
+          "key": "InterestedServices",
+          "label": "Interested Services",
+          "type": "CheckboxList",
+          "required": true,
+          "dataSource": "Services"
+        },
+        {
+          "key": "SupportNotes",
+          "label": "Support Notes",
+          "type": "Text",
+          "placeholder": "Any special support request",
+          "visibleWhen": {
+            "field": "InterestedServices",
+            "contains": "Consulting"
+          }
+        },
+        {
+          "key": "Newsletter",
+          "label": "Subscribe to newsletter",
+          "type": "Checkbox",
+          "visibleWhen": {
+            "field": "IsBusiness",
+            "notEquals": "true"
+          }
+        },
+        {
+          "key": "Referral",
+          "label": "Referral Code",
+          "type": "Text",
+          "placeholder": "Optional",
+          "visibleWhen": {
+            "field": "PhoneNumber",
+            "isEmpty": true
+          }
+        },
+        {
+          "key": "AcceptTerms",
+          "label": "Accept terms and privacy policy",
+          "type": "Checkbox",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
