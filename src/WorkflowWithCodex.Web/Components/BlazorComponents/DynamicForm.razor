@@ -1,0 +1,245 @@
+@using System.Text.Json
+@using WorkflowWithCodex.WorkflowEngine.Model
+@using WorkflowWithCodex.WorkflowEngine.Services
+@using WorkflowWithCodex.WorkflowEngine.WorkflowEngine
+@inject OptionService OptionService
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+            <div>
+                <h1 class="h4 mb-1">@Definition.Title</h1>
+                <p class="text-secondary mb-0">Dynamic workflow-driven form</p>
+            </div>
+            <span class="badge text-bg-primary">Step @(_currentStepIndex + 1) of @Definition.Steps.Count</span>
+        </div>
+
+        <ul class="nav nav-pills flex-column flex-md-row gap-2 mb-4">
+            @for (var index = 0; index < Definition.Steps.Count; index++)
+            {
+                var step = Definition.Steps[index];
+                <li class="nav-item flex-fill">
+                    <button class="nav-link w-100 @(index == _currentStepIndex ? "active" : "")" @onclick="() => GoToStep(index)" disabled="@(index > _currentStepIndex)">
+                        @(index + 1). @step.Title
+                    </button>
+                </li>
+            }
+        </ul>
+
+        <div class="row g-3">
+            @foreach (var field in CurrentStep.Fields.Where(IsVisible))
+            {
+                <DynamicComponent Type="@ResolveFieldComponent(field.Type)" Parameters="@BuildParameters(field)" />
+            }
+        </div>
+
+        <div class="d-flex justify-content-between gap-2 mt-4">
+            <button class="btn btn-outline-secondary" @onclick="MovePrevious" disabled="@(_currentStepIndex == 0)">Previous</button>
+            @if (_currentStepIndex < Definition.Steps.Count - 1)
+            {
+                <button class="btn btn-primary" @onclick="MoveNext" disabled="@(!CanMoveNext)">Next</button>
+            }
+            else
+            {
+                <button class="btn btn-success" @onclick="Submit" disabled="@(!CanMoveNext)">Submit</button>
+            }
+        </div>
+
+        @if (_isSubmitted)
+        {
+            <div class="alert alert-success mt-4 mb-0">
+                <h2 class="h6">Submitted payload</h2>
+                <pre class="mb-0"><code>@_submittedJson</code></pre>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public required WorkflowDefinition Definition { get; set; }
+
+    private readonly DynamicFormState _state = new();
+    private readonly Dictionary<string, IReadOnlyList<SelectOption>> _options = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, FieldDefinition> _fields = new(StringComparer.OrdinalIgnoreCase);
+    private DependencyGraph _dependencyGraph = default!;
+    private int _currentStepIndex;
+    private bool _isSubmitted;
+    private string _submittedJson = string.Empty;
+
+    private WorkflowStepDefinition CurrentStep => Definition.Steps[_currentStepIndex];
+
+    private bool CanMoveNext => CurrentStep.Fields.Where(IsVisible).All(IsFieldValid);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _fields.Clear();
+        foreach (var field in Definition.Steps.SelectMany(step => step.Fields))
+        {
+            _fields[field.Key] = field;
+        }
+
+        _dependencyGraph = new DependencyGraph(Definition);
+        await LoadOptionsAsync();
+    }
+
+    private Dictionary<string, object?> BuildParameters(FieldDefinition field)
+    {
+        return new Dictionary<string, object?>
+        {
+            ["Field"] = field,
+            ["Value"] = _state[field.Key],
+            ["ValueChanged"] = EventCallback.Factory.Create<object?>(this, value => OnFieldValueChangedAsync(field, value)),
+            ["Options"] = GetFieldOptions(field),
+            ["IsDisabled"] = !AreDependenciesSatisfied(field)
+        };
+    }
+
+    private async Task OnFieldValueChangedAsync(FieldDefinition field, object? value)
+    {
+        _state[field.Key] = NormalizeValue(field, value);
+        _isSubmitted = false;
+
+        foreach (var dependent in _dependencyGraph.GetDescendants(field.Key))
+        {
+            _state.Remove(dependent);
+            _options.Remove(dependent);
+        }
+
+        RemoveHiddenFieldValues();
+        await LoadOptionsAsync();
+    }
+
+    private void RemoveHiddenFieldValues()
+    {
+        foreach (var field in _fields.Values.Where(field => !IsVisible(field)))
+        {
+            _state.Remove(field.Key);
+            _options.Remove(field.Key);
+        }
+    }
+
+    private async Task LoadOptionsAsync()
+    {
+        foreach (var field in _fields.Values)
+        {
+            if (string.IsNullOrWhiteSpace(field.DataSource))
+            {
+                continue;
+            }
+
+            if (!IsVisible(field) || !AreDependenciesSatisfied(field))
+            {
+                _options[field.Key] = [];
+                continue;
+            }
+
+            _options[field.Key] = await OptionService.GetOptionsAsync(field.DataSource, _state);
+        }
+    }
+
+    private IReadOnlyList<SelectOption> GetFieldOptions(FieldDefinition field)
+    {
+        return _options.TryGetValue(field.Key, out var options)
+            ? options
+            : [];
+    }
+
+    private bool AreDependenciesSatisfied(FieldDefinition field)
+    {
+        return field.DependsOn.All(parentField => HasValue(_state[parentField]));
+    }
+
+    private bool IsVisible(FieldDefinition field)
+    {
+        var visibleWhen = field.VisibleWhen;
+        if (visibleWhen is null)
+        {
+            return true;
+        }
+
+        var value = _state[visibleWhen.Field]?.ToString();
+        return string.Equals(value, visibleWhen.ExpectedValue, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static object? NormalizeValue(FieldDefinition field, object? rawValue)
+    {
+        return field.Type switch
+        {
+            FieldType.Checkbox => rawValue is bool boolValue && boolValue,
+            FieldType.CheckboxList => rawValue is IEnumerable<string> values ? values.ToList() : [],
+            FieldType.Number => int.TryParse(rawValue?.ToString(), out var numberValue) ? numberValue : null,
+            _ => string.IsNullOrWhiteSpace(rawValue?.ToString()) ? null : rawValue.ToString()
+        };
+    }
+
+    private static bool HasValue(object? value)
+    {
+        return value switch
+        {
+            null => false,
+            string text => !string.IsNullOrWhiteSpace(text),
+            IEnumerable<string> values => values.Any(),
+            _ => true
+        };
+    }
+
+    private bool IsFieldValid(FieldDefinition field)
+    {
+        if (!field.Required)
+        {
+            return true;
+        }
+
+        return HasValue(_state[field.Key]);
+    }
+
+    private static Type ResolveFieldComponent(FieldType type)
+    {
+        return type switch
+        {
+            FieldType.Text => typeof(WorkflowWithCodex.Web.Components.BlazorComponents.Fields.TextField),
+            FieldType.Number => typeof(WorkflowWithCodex.Web.Components.BlazorComponents.Fields.NumberField),
+            FieldType.Select => typeof(WorkflowWithCodex.Web.Components.BlazorComponents.Fields.SelectField),
+            FieldType.CheckboxList => typeof(WorkflowWithCodex.Web.Components.BlazorComponents.Fields.CheckboxListField),
+            FieldType.Checkbox => typeof(WorkflowWithCodex.Web.Components.BlazorComponents.Fields.CheckboxField),
+            _ => throw new InvalidOperationException($"Field type '{type}' is not mapped to a Blazor component.")
+        };
+    }
+
+    private void MoveNext()
+    {
+        if (!CanMoveNext || _currentStepIndex >= Definition.Steps.Count - 1)
+        {
+            return;
+        }
+
+        _currentStepIndex++;
+    }
+
+    private void MovePrevious()
+    {
+        if (_currentStepIndex > 0)
+        {
+            _currentStepIndex--;
+        }
+    }
+
+    private void GoToStep(int stepIndex)
+    {
+        if (stepIndex <= _currentStepIndex)
+        {
+            _currentStepIndex = stepIndex;
+        }
+    }
+
+    private void Submit()
+    {
+        if (!CanMoveNext)
+        {
+            return;
+        }
+
+        _submittedJson = JsonSerializer.Serialize(_state.Values, new JsonSerializerOptions { WriteIndented = true });
+        _isSubmitted = true;
+    }
+}

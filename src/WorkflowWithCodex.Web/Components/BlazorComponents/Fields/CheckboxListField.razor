@@ -1,0 +1,53 @@
+@using WorkflowWithCodex.WorkflowEngine.WorkflowEngine
+
+<div class="col-12">
+    <label class="form-label">@Field.Label @RequiredMarker</label>
+    <div class="row g-2">
+        @foreach (var option in Options)
+        {
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="form-check border rounded p-2">
+                    <input id="@GetId(option.Value)" class="form-check-input" type="checkbox" disabled="@IsDisabled" checked="@IsSelected(option.Value)" @onchange="args => OnChanged(option.Value, args)" />
+                    <label class="form-check-label" for="@GetId(option.Value)">@option.Label</label>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public required FieldDefinition Field { get; set; }
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public IReadOnlyList<SelectOption> Options { get; set; } = [];
+    [Parameter] public bool IsDisabled { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private HashSet<string> SelectedValues => Value switch
+    {
+        IEnumerable<string> values => values.ToHashSet(StringComparer.OrdinalIgnoreCase),
+        _ => []
+    };
+
+    private string RequiredMarker => Field.Required ? "*" : string.Empty;
+
+    private bool IsSelected(string value) => SelectedValues.Contains(value);
+
+    private string GetId(string value) => $"{Field.Key}_{value}";
+
+    private Task OnChanged(string value, ChangeEventArgs args)
+    {
+        var selectedValues = SelectedValues;
+        var shouldSelect = args.Value is bool boolValue && boolValue;
+
+        if (shouldSelect)
+        {
+            selectedValues.Add(value);
+        }
+        else
+        {
+            selectedValues.Remove(value);
+        }
+
+        return ValueChanged.InvokeAsync(selectedValues.ToList());
+    }
+}

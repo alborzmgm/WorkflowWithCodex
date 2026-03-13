@@ -1,0 +1,19 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject WorkflowDefinitionService WorkflowDefinitionService
+@using WorkflowWithCodex.WorkflowEngine.WorkflowEngine
+
+<PageTitle>Dynamic Workflow Form</PageTitle>
+
+<div class="container py-4 py-lg-5">
+    <DynamicForm Definition="_definition" />
+</div>
+
+@code {
+    private WorkflowDefinition _definition = default!;
+
+    protected override void OnInitialized()
+    {
+        _definition = WorkflowDefinitionService.GetWorkflow();
+    }
+}

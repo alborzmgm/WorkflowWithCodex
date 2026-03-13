@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WorkflowWithCodex.Web/WorkflowWithCodex.Web.csproj" />
+    <Project Path="src/WorkflowWithCodex.WorkflowEngine/WorkflowWithCodex.WorkflowEngine.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WorkflowWithCodex.WorkflowEngine.Tests/WorkflowWithCodex.WorkflowEngine.Tests.csproj" />
+  </Folder>
+</Solution>

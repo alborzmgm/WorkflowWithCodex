@@ -1,0 +1,24 @@
+@using WorkflowWithCodex.WorkflowEngine.WorkflowEngine
+
+<div class="col-12">
+    <div class="form-check form-switch mt-2">
+        <input id="@Field.Key" class="form-check-input" type="checkbox" disabled="@IsDisabled" checked="@CurrentValue" @onchange="OnChanged" />
+        <label class="form-check-label" for="@Field.Key">@Field.Label</label>
+    </div>
+</div>
+
+@code {
+    [Parameter] public required FieldDefinition Field { get; set; }
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public IReadOnlyList<SelectOption> Options { get; set; } = [];
+    [Parameter] public bool IsDisabled { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private bool CurrentValue => Value is bool booleanValue && booleanValue;
+
+    private Task OnChanged(ChangeEventArgs args)
+    {
+        var checkedValue = args.Value is bool boolValue && boolValue;
+        return ValueChanged.InvokeAsync(checkedValue);
+    }
+}
