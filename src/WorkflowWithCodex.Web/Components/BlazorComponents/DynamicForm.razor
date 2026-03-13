@@ -37,11 +37,11 @@
             <button class="btn btn-outline-secondary" @onclick="MovePrevious" disabled="@(_currentStepIndex == 0)">Previous</button>
             @if (_currentStepIndex < Definition.Steps.Count - 1)
             {
-                <button class="btn btn-primary" @onclick="MoveNext" disabled="@(!CanMoveNext)">Next</button>
+                <button class="btn btn-primary" @onclick="MoveNext">Next</button>
             }
             else
             {
-                <button class="btn btn-success" @onclick="Submit" disabled="@(!CanMoveNext)">Submit</button>
+                <button class="btn btn-success" @onclick="Submit">Submit</button>
             }
         </div>
 

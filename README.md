@@ -25,7 +25,7 @@ Open the URL printed by `dotnet run`.
 - `src/WorkflowWithCodex.Web/Components/BlazorComponents`
   - `DynamicForm` and dynamic field components rendered using `DynamicComponent`
 - `src/WorkflowWithCodex.Web/WorkflowDefinitions/location-workflow.json`
-  - Declarative workflow with 3 steps
+  - Declarative workflow with 4 steps
 
 ## Workflow JSON Notes
 
