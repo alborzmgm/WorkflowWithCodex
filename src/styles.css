@@ -1,0 +1,123 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: #1f2937;
+  background: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 760px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #dde3ee;
+  box-shadow: 0 14px 40px rgba(17, 24, 39, 0.08);
+  padding: 28px;
+}
+
+.subtitle {
+  color: #4b5563;
+  margin-top: 0;
+}
+
+#dynamic-form {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  margin: 0;
+}
+
+.checkbox-group {
+  border: 1px solid #d7deea;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.checkbox-group legend {
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #cdd8e8;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  background: #fff;
+}
+
+.checkbox-option:hover {
+  border-color: #7f9cf5;
+  background: #f8faff;
+}
+
+.checkbox-option.selected {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
+.checkbox-option input {
+  width: 18px;
+  height: 18px;
+}
+
+.selection-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.chip {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.selection-placeholder {
+  margin: 12px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.text-field {
+  display: grid;
+  gap: 6px;
+}
+
+.text-field input {
+  border: 1px solid #cfd8e3;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.info {
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #eef2ff;
+  color: #3730a3;
+}

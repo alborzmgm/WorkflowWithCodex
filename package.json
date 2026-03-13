@@ -1,0 +1,21 @@
+{
+  "name": "workflowwithcodex",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 4173"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alborzmgm/WorkflowWithCodex.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/alborzmgm/WorkflowWithCodex/issues"
+  },
+  "homepage": "https://github.com/alborzmgm/WorkflowWithCodex#readme"
+}
